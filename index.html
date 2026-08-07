@@ -81,6 +81,18 @@
     color: var(--accent);
     letter-spacing: 1px;
   }
+  .score-neighbors{
+    display:flex;
+    justify-content:center;
+    gap: 6px;
+    font-size: 8.5px;
+    font-weight:bold;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+    height: 10px;
+  }
+  .score-neighbors .sn-above{ color: var(--accent); }
+  .score-neighbors .sn-below{ color: var(--danger); }
   #logo{
     font-size: 13px;
     font-weight: bold;
@@ -131,8 +143,10 @@
   #combat-hud{
     display:none;
     flex-direction:column;
-    gap: 4px;
-    padding: 0 10px 6px;
+    gap: 5px;
+    padding: 6px 10px 8px;
+    margin-top: 2px;
+    border-top: 1px solid var(--line);
     flex-shrink:0;
   }
   #combat-hud.show{ display:flex; }
@@ -174,32 +188,6 @@
   @keyframes pulseReady{
     0%,100%{ opacity:1; } 50%{ opacity:0.6; }
   }
-
-  /* ---------- Live rank panel ---------- */
-  #rank-hud{
-    display:flex;
-    flex-direction:column;
-    gap: 2px;
-    padding: 0 10px 6px;
-    flex-shrink:0;
-  }
-  #rank-hud.hide{ display:none; }
-  .rank-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    font-size: 9.5px;
-    letter-spacing: 0.5px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-  }
-  .rank-row .rank-tag{ color: var(--dim); }
-  .rank-row .rank-val{ color: var(--ink); font-weight:bold; }
-  .rank-row.top .rank-val{ color: #ffd23f; }
-  .rank-row.above .rank-val{ color: var(--accent); }
-  .rank-row.below .rank-val{ color: var(--dim); }
 
   /* ---------- Pause blur ---------- */
   #board.blurred{ filter: blur(9px) brightness(0.6); }
@@ -450,7 +438,7 @@
   @media (max-height: 620px){
     #hud{ padding: 4px 10px 2px; }
     .hud-box{ padding:3px 7px; }
-    #combat-hud{ padding: 0 10px 4px; }
+    #combat-hud{ padding: 4px 10px 4px; }
     #controls{ padding: 6px 16px calc(8px + var(--safe-bottom)); }
     #dpad{ grid-template-columns: 46px 46px 46px; grid-template-rows: 46px 46px; gap:12px; }
     #actions{ grid-template-columns: 46px 46px; grid-template-rows: 46px 46px; gap:14px; }
@@ -465,7 +453,14 @@
   <div id="hud">
     <div id="logo">BLOC<span>FALL</span><button id="btn-install" title="Installer">⭳</button><button id="btn-quit" title="Menu">🏠</button></div>
     <div style="display:flex; gap:6px;">
-      <div class="hud-box"><span class="lbl">Score</span><div class="val" id="hud-score">0</div></div>
+      <div class="hud-box">
+        <span class="lbl">Score</span>
+        <div class="val" id="hud-score">0</div>
+        <div class="score-neighbors">
+          <span class="sn-above" id="score-above"></span>
+          <span class="sn-below" id="score-below"></span>
+        </div>
+      </div>
       <div class="hud-box"><span class="lbl">Niv.</span><div class="val" id="hud-level">1</div></div>
       <div class="hud-box"><span class="lbl">Lignes</span><div class="val" id="hud-lines">0</div></div>
     </div>
@@ -480,12 +475,6 @@
       <div class="gauge-label">Fantôme</div>
       <div class="gauge-track enemy"><div class="gauge-fill" id="enemy-gauge-fill"></div></div>
     </div>
-  </div>
-
-  <div id="rank-hud" class="hide">
-    <div class="rank-row above" id="rank-above"><span class="rank-tag">▲ Au-dessus</span><span class="rank-val">—</span></div>
-    <div class="rank-row top" id="rank-top"><span class="rank-tag">🏆 Record</span><span class="rank-val">—</span></div>
-    <div class="rank-row below" id="rank-below"><span class="rank-tag">▼ En dessous</span><span class="rank-val">—</span></div>
   </div>
 
   <div id="playfield-wrap">
@@ -1186,7 +1175,6 @@
     resizeCanvas();
     updateBackgroundForLevel();
     document.getElementById('btn-quit').classList.add('show');
-    document.getElementById('rank-hud').classList.remove('hide');
 
     overlay.classList.add('hidden');
     boardCanvas.classList.remove('blurred');
@@ -1194,6 +1182,7 @@
     lastTime = performance.now();
     if(rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(loop);
+    requestAnimationFrame(resizeCanvas);
     return true;
   }
 
@@ -1229,14 +1218,13 @@
     return { top, above, below };
   }
 
-  function updateRankPanel(){
-    const panel = document.getElementById('rank-hud');
-    if(!running || gameOver){ panel.classList.add('hide'); return; }
-    panel.classList.remove('hide');
-    const { top, above, below } = getRankNeighbors(score);
-    document.querySelector('#rank-top .rank-val').textContent = top ? (top.score + ' (' + top.lines + ' l.)') : '—';
-    document.querySelector('#rank-above .rank-val').textContent = above ? (above.score + ' (' + above.lines + ' l.)') : 'Tu es 1er !';
-    document.querySelector('#rank-below .rank-val').textContent = below ? (below.score + ' (' + below.lines + ' l.)') : '—';
+  function updateScoreNeighbors(){
+    const aboveEl = document.getElementById('score-above');
+    const belowEl = document.getElementById('score-below');
+    if(!running || gameOver){ aboveEl.textContent = ''; belowEl.textContent = ''; return; }
+    const { above, below } = getRankNeighbors(score);
+    aboveEl.textContent = above ? ('▲' + above.score) : (loadScores().length ? '🏆' : '');
+    belowEl.textContent = below ? ('▼' + below.score) : '';
   }
 
   // ---------------- Difficulty background ----------------
@@ -1455,7 +1443,7 @@
     document.getElementById('hud-score').textContent = score;
     document.getElementById('hud-level').textContent = level;
     document.getElementById('hud-lines').textContent = lines;
-    updateRankPanel();
+    updateScoreNeighbors();
   }
 
   // ---------------- Overlay / screens ----------------
@@ -1483,7 +1471,6 @@
   function showHome(){
     running = false;
     document.getElementById('btn-quit').classList.remove('show');
-    document.getElementById('rank-hud').classList.add('hide');
     document.getElementById('combat-hud').classList.remove('show');
     boardCanvas.classList.remove('blurred');
 
@@ -1516,7 +1503,6 @@
 
   function showGameOverScreen(){
     document.getElementById('btn-quit').classList.remove('show');
-    document.getElementById('rank-hud').classList.add('hide');
     boardCanvas.classList.remove('blurred');
     const top = getTopScores(1)[0];
     const isRecord = top && top.score === score && top.lines === lines;
@@ -1605,8 +1591,8 @@
     if(rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(loop);
     document.getElementById('btn-quit').classList.add('show');
-    document.getElementById('rank-hud').classList.remove('hide');
-    updateRankPanel();
+    updateScoreNeighbors();
+    requestAnimationFrame(resizeCanvas);
   }
 
   function togglePause(){
