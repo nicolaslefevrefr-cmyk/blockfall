@@ -110,6 +110,23 @@
   #btn-install.show{ display:flex; }
   #btn-install:active{ transform: scale(0.92); }
 
+  #btn-quit{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    width: 30px;
+    height: 30px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--dim);
+    font-size: 14px;
+    margin-left: 6px;
+    flex-shrink:0;
+  }
+  #btn-quit.show{ display:flex; }
+  #btn-quit:active{ transform: scale(0.92); }
+
   /* ---------- Combat HUD ---------- */
   #combat-hud{
     display:none;
@@ -157,6 +174,70 @@
   @keyframes pulseReady{
     0%,100%{ opacity:1; } 50%{ opacity:0.6; }
   }
+
+  /* ---------- Live rank panel ---------- */
+  #rank-hud{
+    display:flex;
+    flex-direction:column;
+    gap: 2px;
+    padding: 0 10px 6px;
+    flex-shrink:0;
+  }
+  #rank-hud.hide{ display:none; }
+  .rank-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size: 9.5px;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+  }
+  .rank-row .rank-tag{ color: var(--dim); }
+  .rank-row .rank-val{ color: var(--ink); font-weight:bold; }
+  .rank-row.top .rank-val{ color: #ffd23f; }
+  .rank-row.above .rank-val{ color: var(--accent); }
+  .rank-row.below .rank-val{ color: var(--dim); }
+
+  /* ---------- Pause blur ---------- */
+  #board.blurred{ filter: blur(9px) brightness(0.6); }
+
+  /* ---------- Home leaderboard ---------- */
+  #home-board{
+    width: 100%;
+    max-width: 240px;
+    display:flex;
+    flex-direction:column;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  #home-board .hb-title{
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-align:center;
+    margin-bottom: 2px;
+  }
+  .hb-row{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    font-size: 10.5px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+  }
+  .hb-row .hb-rank{ color: var(--accent2); font-weight:bold; width: 16px; flex-shrink:0; }
+  .hb-row .hb-score{ color: var(--ink); font-weight:bold; flex:1; text-align:left; }
+  .hb-row .hb-meta{ color: var(--dim); font-size:9px; flex-shrink:0; }
+  .hb-empty{ font-size:10px; color: var(--dim); text-align:center; padding: 6px; }
+
+  /* ---------- Combat attack visuals ---------- */
+  #board-frame.flipped #board{ transform: rotate(180deg); }
+  #board{ transition: transform 0.5s ease, filter 0.3s ease; }
 
   /* ---------- Main play area ---------- */
   #playfield-wrap{
@@ -266,6 +347,10 @@
     background: var(--accent2);
     color: #1d0510;
   }
+  #overlay .big-btn.resume{
+    background: #ffd23f;
+    color: #241a03;
+  }
   #overlay .big-btn:active{ transform: scale(0.96); }
   #overlay .sub-btn{
     background: transparent;
@@ -303,13 +388,13 @@
   #dpad{
     display:grid;
     grid-template-columns: 54px 54px 54px;
-    grid-template-rows: 54px;
+    grid-template-rows: 54px 54px;
     gap: 20px;
   }
   #dpad .ctrl-btn{ border-color: rgba(79,227,193,0.28); }
   #btn-left{ grid-column:1; grid-row:1; }
   #btn-right{ grid-column:3; grid-row:1; }
-  #btn-down{ grid-column:2; grid-row:1; }
+  #btn-down{ grid-column:2; grid-row:2; margin-top:6px; }
   #actions{
     display:grid;
     grid-template-columns: 54px 54px;
@@ -367,7 +452,7 @@
     .hud-box{ padding:3px 7px; }
     #combat-hud{ padding: 0 10px 4px; }
     #controls{ padding: 6px 16px calc(8px + var(--safe-bottom)); }
-    #dpad{ grid-template-columns: 46px 46px 46px; grid-template-rows: 46px; gap:14px; }
+    #dpad{ grid-template-columns: 46px 46px 46px; grid-template-rows: 46px 46px; gap:12px; }
     #actions{ grid-template-columns: 46px 46px; grid-template-rows: 46px 46px; gap:14px; }
     #controls{ gap: 24px; }
   }
@@ -378,7 +463,7 @@
 <div id="app">
 
   <div id="hud">
-    <div id="logo">BLOC<span>FALL</span><button id="btn-install" title="Installer">⭳</button></div>
+    <div id="logo">BLOC<span>FALL</span><button id="btn-install" title="Installer">⭳</button><button id="btn-quit" title="Menu">🏠</button></div>
     <div style="display:flex; gap:6px;">
       <div class="hud-box"><span class="lbl">Score</span><div class="val" id="hud-score">0</div></div>
       <div class="hud-box"><span class="lbl">Niv.</span><div class="val" id="hud-level">1</div></div>
@@ -395,6 +480,12 @@
       <div class="gauge-label">Fantôme</div>
       <div class="gauge-track enemy"><div class="gauge-fill" id="enemy-gauge-fill"></div></div>
     </div>
+  </div>
+
+  <div id="rank-hud" class="hide">
+    <div class="rank-row above" id="rank-above"><span class="rank-tag">▲ Au-dessus</span><span class="rank-val">—</span></div>
+    <div class="rank-row top" id="rank-top"><span class="rank-tag">🏆 Record</span><span class="rank-val">—</span></div>
+    <div class="rank-row below" id="rank-below"><span class="rank-tag">▼ En dessous</span><span class="rank-val">—</span></div>
   </div>
 
   <div id="playfield-wrap">
@@ -463,13 +554,22 @@
   const KICKS_Y = [0, 0, 0, 1, -1];
 
   const ATTACKS = [
-    { id:'invert',   label:'Contrôles inversés',      icon:'🔀', duration:7000 },
-    { id:'blur',     label:'Vision floutée',          icon:'🌫️', duration:5500 },
-    { id:'speed',    label:'Chute accélérée',         icon:'⚡', duration:8000 },
+    { id:'invert',   label:'Contrôles inversés',        icon:'🔀', duration:7000 },
+    { id:'blur',     label:'Vision floutée',            icon:'🌫️', duration:5500 },
+    { id:'speed',    label:'Chute accélérée',           icon:'⚡', duration:8000 },
     { id:'hidenext', label:'Prochaines pièces cachées', icon:'❓', duration:9000 },
-    { id:'spotlight',label:'Vision réduite',          icon:'🔦', duration:7000 },
-    { id:'garbage',  label:'Lignes parasites',        icon:'🧱', duration:0 },
+    { id:'spotlight',label:'Vision réduite',            icon:'🔦', duration:7000 },
+    { id:'garbage',  label:'Lignes parasites',          icon:'🧱', duration:0 },
+    { id:'ghostlie', label:'Ombre menteuse',            icon:'👻', duration:9000 },
+    { id:'freeze',   label:'Gel bref',                  icon:'🧊', duration:1200 },
+    { id:'flip',     label:'Champ retourné',            icon:'🙃', duration:6500 },
+    { id:'camo',     label:'Camouflage',                icon:'🎨', duration:8000 },
+    { id:'mutant',   label:'Pièces mutantes',           icon:'🎲', duration:0, count:3 },
+    { id:'worm',     label:'Ver rongeur',               icon:'🪱', duration:0 },
   ];
+
+  const STORAGE_SAVE = 'blocfall_save_v1';
+  const STORAGE_SCORES = 'blocfall_scores_v1';
 
   function levelDropMs(level){
     const speeds = [800,720,630,550,470,390,320,260,210,160,130,100,80,70,60,50,45,40,35,30];
@@ -490,12 +590,17 @@
   let enemyGauge, enemyFillRate;
   let playerGauge, shieldReady, shieldActive;
   let controlsInverted, speedMultiplier, nextHidden, spotlightActive;
+  let ghostLying, frozen, flipped, camouflaged;
+  let ghostFakeOffsetX = 0;
+  let mutantPiecesLeft = 0;
+  let worm = null;
   let attackTimeouts = {};
   let telegraph = null;
 
   const FLASH_MS = 260;
   const FALL_MS = 220;
   const TELEGRAPH_MS = 1500;
+  const CAMO_COLOR = '#8f94b8';
 
   function emptyBoard(){
     const b = [];
@@ -516,8 +621,8 @@
     if(bag.length < 8) bag = bag.concat(newBag());
   }
 
-  function spawnPiece(type){
-    const shape = SHAPES[type].map(row=>row.slice());
+  function spawnPiece(type, customShape){
+    const shape = (customShape || SHAPES[type]).map(row=>row.slice());
     const size = shape.length;
     return {
       type, shape,
@@ -529,7 +634,41 @@
   function newCurrentFromQueue(){
     refillQueue();
     const type = bag.shift();
+    if(mutantPiecesLeft > 0){
+      mutantPiecesLeft--;
+      return spawnPiece(type, generateMutantShape());
+    }
     return spawnPiece(type);
+  }
+
+  function generateMutantShape(){
+    // Random connected polyomino (orthogonal adjacency only, no diagonal-only links),
+    // built inside a 4x4 grid so it plugs into the existing square-shape engine.
+    const SIZE = 4;
+    const grid = [];
+    for(let i=0;i<SIZE;i++) grid.push(new Array(SIZE).fill(0));
+    const cellCount = 4 + (Math.random() < 0.4 ? 1 : 0); // mostly 4, sometimes 5
+    const cells = [[1,1]];
+    grid[1][1] = 1;
+    let guard = 0;
+    while(cells.length < cellCount && guard < 50){
+      guard++;
+      const [r,c] = cells[Math.floor(Math.random()*cells.length)];
+      const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+      for(let i=dirs.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [dirs[i],dirs[j]] = [dirs[j],dirs[i]];
+      }
+      for(const [dr,dc] of dirs){
+        const nr = r+dr, nc = c+dc;
+        if(nr>=0 && nr<SIZE && nc>=0 && nc<SIZE && !grid[nr][nc]){
+          grid[nr][nc] = 1;
+          cells.push([nr,nc]);
+          break;
+        }
+      }
+    }
+    return grid;
   }
 
   // ---------------- Collision ----------------
@@ -562,8 +701,8 @@
   }
 
   function tryRotate(dir){
-    if(!current) return;
-    if(current.type === 'O'){ resetLockDelay(); return; }
+    if(!current || frozen) return;
+    if(current.type === 'O' && current.shape.length === 2){ resetLockDelay(); return; }
     const rotated = rotateMatrix(current.shape, dir);
     for(let i=0;i<KICKS_X.length;i++){
       const ox = KICKS_X[i], oy = KICKS_Y[i];
@@ -592,13 +731,20 @@
   }
 
   function moveDir(dir){
+    if(frozen) return;
     // dir: -1 = left, 1 = right. Inverted during 'invert' attack.
     const actual = controlsInverted ? -dir : dir;
     tryMove(actual, 0);
   }
 
+  function softDrop(){
+    if(frozen) return;
+    if(tryMove(0,1)) score += 1;
+    updateHud();
+  }
+
   function hardDrop(){
-    if(!current) return;
+    if(!current || frozen) return;
     let dist = 0;
     while(!collides(current, 0, dist+1)) dist++;
     current.y += dist;
@@ -707,7 +853,7 @@
     score += (points[n] || n*200) * level;
     lines += n;
     const newLevel = Math.floor(lines/10) + 1;
-    if(newLevel !== level) level = newLevel;
+    if(newLevel !== level){ level = newLevel; updateBackgroundForLevel(); }
 
     if(gameMode === 'combat'){
       const gaugeGain = [0,15,30,50,80][n] || 80;
@@ -730,15 +876,19 @@
   function spawnNext(){
     current = newCurrentFromQueue();
     if(collides(current, 0, 0)){ triggerGameOver(); return; }
+    if(ghostLying) rerollGhostOffset();
     dropTimer = 0;
     draw();
     drawSidePanels();
+    autosave();
   }
 
   function triggerGameOver(){
     gameOver = true;
     running = false;
     clearAllAttackEffects();
+    clearSavedGame();
+    saveScoreEntry({ score, lines, level, mode: gameMode, date: Date.now() });
     showGameOverScreen();
   }
 
@@ -809,7 +959,36 @@
       case 'garbage':
         addGarbageLines(1 + (Math.random() < 0.35 ? 1 : 0));
         break;
+      case 'ghostlie':
+        ghostLying = true;
+        rerollGhostOffset();
+        scheduleAttackEnd('ghostlie', attack.duration);
+        break;
+      case 'freeze':
+        frozen = true;
+        scheduleAttackEnd('freeze', attack.duration);
+        break;
+      case 'flip':
+        flipped = true;
+        document.getElementById('board-frame').classList.add('flipped');
+        scheduleAttackEnd('flip', attack.duration);
+        break;
+      case 'camo':
+        camouflaged = true;
+        scheduleAttackEnd('camo', attack.duration);
+        break;
+      case 'mutant':
+        mutantPiecesLeft = attack.count || 3;
+        break;
+      case 'worm':
+        startWormAttack();
+        break;
     }
+  }
+
+  function rerollGhostOffset(){
+    const opts = [-2,-1,1,2];
+    ghostFakeOffsetX = opts[Math.floor(Math.random()*opts.length)];
   }
 
   function scheduleAttackEnd(type, duration){
@@ -824,6 +1003,10 @@
       case 'speed': speedMultiplier = 1; break;
       case 'hidenext': nextHidden = false; drawSidePanels(); break;
       case 'spotlight': spotlightActive = false; break;
+      case 'ghostlie': ghostLying = false; break;
+      case 'freeze': frozen = false; break;
+      case 'flip': flipped = false; document.getElementById('board-frame').classList.remove('flipped'); break;
+      case 'camo': camouflaged = false; break;
     }
   }
 
@@ -837,7 +1020,58 @@
     speedMultiplier = 1;
     nextHidden = false;
     spotlightActive = false;
+    ghostLying = false;
+    frozen = false;
+    flipped = false;
+    camouflaged = false;
+    mutantPiecesLeft = 0;
+    worm = null;
     boardCanvas.style.filter = 'none';
+    document.getElementById('board-frame').classList.remove('flipped', 'incoming');
+  }
+
+  function startWormAttack(){
+    worm = {
+      col: Math.floor(Math.random()*COLS),
+      dir: Math.random() < 0.5 ? 1 : -1,
+      eaten: 0,
+      maxEat: 4 + Math.floor(Math.random()*3),
+      stepTimer: 0,
+      stepInterval: 420,
+      displayRow: 0
+    };
+  }
+
+  function wormEatStep(){
+    let targetRow = -1;
+    for(let r=0;r<ROWS;r++){
+      if(board[r][worm.col]){ targetRow = r; break; }
+    }
+    if(targetRow >= 0){
+      const type = board[targetRow][worm.col];
+      const cx = worm.col*cell + cell/2, cy = targetRow*cell + cell/2;
+      for(let i=0;i<5;i++){
+        particles.push({
+          x: cx, y: cy,
+          vx: (Math.random()-0.5)*3,
+          vy: (Math.random()-0.5)*3 - 0.5,
+          life: 360 + Math.random()*160, maxLife: 520,
+          color: COLORS[type] || '#8a6a4a',
+          size: cell*0.16 + Math.random()*cell*0.1
+        });
+      }
+      board[targetRow][worm.col] = null;
+      worm.displayRow = targetRow;
+    }
+    worm.eaten++;
+    worm.col += worm.dir;
+    if(worm.col < 0){ worm.col = 0; worm.dir = 1; }
+    if(worm.col >= COLS){ worm.col = COLS-1; worm.dir = -1; }
+    if(worm.eaten >= worm.maxEat){
+      worm = null;
+      toast('🪱 Le ver a terminé son repas', false);
+    }
+    draw();
   }
 
   function addGarbageLines(n){
@@ -885,6 +1119,161 @@
     setTimeout(()=>{ el.remove(); }, 2250);
   }
 
+  // ---------------- Persistence: save / resume ----------------
+  function serializeState(){
+    return {
+      v: 1,
+      gameMode, board, current, bag, holdPiece, holdUsed,
+      score, lines, level,
+      enemyGauge, playerGauge, shieldReady, shieldActive,
+      savedAt: Date.now()
+    };
+  }
+
+  function autosave(){
+    if(!running || gameOver) return;
+    try{ localStorage.setItem(STORAGE_SAVE, JSON.stringify(serializeState())); }
+    catch(e){ /* storage unavailable, ignore */ }
+  }
+
+  function getSavedGame(){
+    try{
+      const raw = localStorage.getItem(STORAGE_SAVE);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+
+  function clearSavedGame(){
+    try{ localStorage.removeItem(STORAGE_SAVE); }catch(e){}
+  }
+
+  function resumeGame(){
+    const data = getSavedGame();
+    if(!data) return false;
+
+    gameMode = data.gameMode;
+    board = data.board;
+    current = data.current;
+    bag = data.bag;
+    holdPiece = data.holdPiece;
+    holdUsed = data.holdUsed;
+    score = data.score; lines = data.lines; level = data.level;
+
+    dropTimer = 0; lockTimer = 0; isLocking = false;
+    clearingRows = null; clearAnimTimer = 0; fallAnim = null; particles = [];
+    gameOver = false;
+
+    controlsInverted = false; speedMultiplier = 1; nextHidden = false; spotlightActive = false;
+    ghostLying = false; frozen = false; flipped = false; camouflaged = false;
+    mutantPiecesLeft = 0; worm = null; attackTimeouts = {}; telegraph = null;
+    boardCanvas.style.filter = 'none';
+    document.getElementById('board-frame').classList.remove('flipped', 'incoming');
+
+    if(gameMode === 'combat'){
+      enemyGauge = data.enemyGauge || 0;
+      playerGauge = data.playerGauge || 0;
+      shieldReady = !!data.shieldReady;
+      shieldActive = !!data.shieldActive;
+      rollEnemyFillRate();
+      document.getElementById('combat-hud').classList.add('show');
+      updateCombatUI();
+    } else {
+      document.getElementById('combat-hud').classList.remove('show');
+    }
+
+    updateHud();
+    drawSidePanels();
+    resizeCanvas();
+    updateBackgroundForLevel();
+    document.getElementById('btn-quit').classList.add('show');
+    document.getElementById('rank-hud').classList.remove('hide');
+
+    overlay.classList.add('hidden');
+    boardCanvas.classList.remove('blurred');
+    running = true; paused = false;
+    lastTime = performance.now();
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+    return true;
+  }
+
+  // ---------------- Leaderboard ----------------
+  function loadScores(){
+    try{
+      const raw = localStorage.getItem(STORAGE_SCORES);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+
+  function saveScoreEntry(entry){
+    const scores = loadScores();
+    scores.push(entry);
+    scores.sort((a,b)=> b.score - a.score);
+    const trimmed = scores.slice(0,50);
+    try{ localStorage.setItem(STORAGE_SCORES, JSON.stringify(trimmed)); }catch(e){}
+    return trimmed;
+  }
+
+  function getTopScores(n){
+    return loadScores().sort((a,b)=> b.score - a.score).slice(0,n);
+  }
+
+  function getRankNeighbors(currentScore){
+    const scores = loadScores().sort((a,b)=> b.score - a.score);
+    const top = scores[0] || null;
+    let above = null, below = null;
+    for(let i=0;i<scores.length;i++){
+      if(scores[i].score > currentScore) above = scores[i];
+      if(scores[i].score <= currentScore){ below = scores[i]; break; }
+    }
+    return { top, above, below };
+  }
+
+  function updateRankPanel(){
+    const panel = document.getElementById('rank-hud');
+    if(!running || gameOver){ panel.classList.add('hide'); return; }
+    panel.classList.remove('hide');
+    const { top, above, below } = getRankNeighbors(score);
+    document.querySelector('#rank-top .rank-val').textContent = top ? (top.score + ' (' + top.lines + ' l.)') : '—';
+    document.querySelector('#rank-above .rank-val').textContent = above ? (above.score + ' (' + above.lines + ' l.)') : 'Tu es 1er !';
+    document.querySelector('#rank-below .rank-val').textContent = below ? (below.score + ' (' + below.lines + ' l.)') : '—';
+  }
+
+  // ---------------- Difficulty background ----------------
+  const BG_STOPS = [
+    { lvl:1,  a:'#1a1f36', pulse:'6s',   danger:false },
+    { lvl:5,  a:'#242c50', pulse:'5s',   danger:false },
+    { lvl:9,  a:'#382a55', pulse:'3.6s', danger:false },
+    { lvl:13, a:'#4a2440', pulse:'2.4s', danger:true  },
+    { lvl:17, a:'#5c1f2c', pulse:'1.5s', danger:true  },
+  ];
+  function updateBackgroundForLevel(){
+    let chosen = BG_STOPS[0];
+    for(const s of BG_STOPS){ if(level >= s.lvl) chosen = s; }
+    document.body.style.setProperty('--glow-a', chosen.a);
+    document.body.style.setProperty('--glow-pulse', chosen.pulse);
+    document.body.classList.toggle('danger-bg', chosen.danger);
+  }
+
+  // ---------------- Quit confirmation ----------------
+  function confirmQuitFlow(){
+    overlay.innerHTML =
+      '<h1>QUITTER ?</h1>' +
+      '<p>La partie sera sauvegardée automatiquement. Tu pourras la reprendre depuis le menu.</p>' +
+      '<button class="big-btn" id="btn-quit-confirm">QUITTER</button>' +
+      '<button class="sub-btn" id="btn-quit-cancel">ANNULER</button>';
+    overlay.classList.remove('hidden');
+    document.getElementById('btn-quit-confirm').addEventListener('click', ()=>{
+      autosave();
+      running = false; paused = false;
+      boardCanvas.classList.remove('blurred');
+      showHome();
+    });
+    document.getElementById('btn-quit-cancel').addEventListener('click', ()=>{
+      showPauseScreen();
+    });
+  }
+
   // ---------------- Rendering ----------------
   const boardCanvas = document.getElementById('board');
   const bctx = boardCanvas.getContext('2d');
@@ -918,6 +1307,11 @@
     ctx.globalAlpha = 1;
   }
 
+  function pieceColor(type){
+    if(camouflaged && type !== 'GARBAGE') return CAMO_COLOR;
+    return COLORS[type];
+  }
+
   function draw(){
     const w = boardCanvas.width, h = boardCanvas.height;
     bctx.clearRect(0,0,w,h);
@@ -936,7 +1330,7 @@
         const drawY = r + shift * eased;
         for(let c=0;c<COLS;c++){
           const v = fallAnim.snapshot[r][c];
-          if(v) drawCellPx(bctx, c*cell, drawY*cell, cell, COLORS[v]);
+          if(v) drawCellPx(bctx, c*cell, drawY*cell, cell, pieceColor(v));
         }
       }
     } else {
@@ -945,7 +1339,7 @@
           const v = board[r][c];
           if(v){
             const flashing = clearingRows && clearingRows.includes(r);
-            drawCell(bctx, c, r, cell, flashing ? '#ffffff' : COLORS[v]);
+            drawCell(bctx, c, r, cell, flashing ? '#ffffff' : pieceColor(v));
           }
         }
       }
@@ -955,20 +1349,35 @@
       const gy = ghostY();
       const shape = current.shape;
       const size = shape.length;
+      const gx = ghostLying ? Math.max(0, Math.min(COLS-size, current.x + ghostFakeOffsetX)) : current.x;
       for(let r=0;r<size;r++){
         for(let c=0;c<size;c++){
           if(!shape[r][c]) continue;
           const by = gy + r;
-          if(by >= 0) drawCell(bctx, current.x + c, by, cell, COLORS[current.type], 0.18);
+          if(by >= 0) drawCell(bctx, gx + c, by, cell, pieceColor(current.type), 0.18);
         }
       }
       for(let r=0;r<size;r++){
         for(let c=0;c<size;c++){
           if(!shape[r][c]) continue;
           const by = current.y + r;
-          if(by >= 0) drawCell(bctx, current.x + c, by, cell, COLORS[current.type]);
+          if(by >= 0) drawCell(bctx, current.x + c, by, cell, pieceColor(current.type));
         }
       }
+    }
+
+    if(worm){
+      const cx = worm.col*cell + cell/2;
+      const cy = worm.displayRow*cell + cell/2;
+      bctx.fillStyle = '#a97c50';
+      bctx.beginPath();
+      bctx.ellipse(cx, cy, cell*0.34, cell*0.24, 0, 0, Math.PI*2);
+      bctx.fill();
+      bctx.fillStyle = '#3a281a';
+      bctx.beginPath();
+      bctx.arc(cx - cell*0.1, cy - cell*0.05, cell*0.045, 0, Math.PI*2);
+      bctx.arc(cx + cell*0.1, cy - cell*0.05, cell*0.045, 0, Math.PI*2);
+      bctx.fill();
     }
 
     if(particles.length){
@@ -1046,29 +1455,75 @@
     document.getElementById('hud-score').textContent = score;
     document.getElementById('hud-level').textContent = level;
     document.getElementById('hud-lines').textContent = lines;
+    updateRankPanel();
   }
 
   // ---------------- Overlay / screens ----------------
   const overlay = document.getElementById('overlay');
 
+  function escapeHtml(str){
+    return String(str).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+
+  function buildLeaderboardHtml(){
+    const scores = getTopScores(5);
+    let html = '<div id="home-board"><div class="hb-title">🏆 MEILLEURS SCORES</div>';
+    if(scores.length === 0){
+      html += '<div class="hb-empty">Aucune partie enregistrée pour l\'instant.</div>';
+    } else {
+      scores.forEach((s,i)=>{
+        const modeIcon = s.mode === 'combat' ? '⚔️' : '🎮';
+        html += '<div class="hb-row"><span class="hb-rank">#'+(i+1)+'</span><span class="hb-score">'+s.score+'</span><span class="hb-meta">'+s.lines+' l. · '+modeIcon+'</span></div>';
+      });
+    }
+    html += '</div>';
+    return html;
+  }
+
   function showHome(){
     running = false;
+    document.getElementById('btn-quit').classList.remove('show');
+    document.getElementById('rank-hud').classList.add('hide');
+    document.getElementById('combat-hud').classList.remove('show');
+    boardCanvas.classList.remove('blurred');
+
+    const saved = getSavedGame();
+    let resumeHtml = '';
+    if(saved){
+      const modeLabel = saved.gameMode === 'combat' ? 'Combat' : 'Solo';
+      resumeHtml =
+        '<button class="big-btn resume" id="btn-resume-game">REPRENDRE LA PARTIE</button>' +
+        '<p class="mode-desc">Score en cours : ' + saved.score + ' · ' + modeLabel + '</p>';
+    }
+
     overlay.innerHTML =
       '<h1>BLOCFALL</h1>' +
+      resumeHtml +
       '<p>Choisis ton mode.</p>' +
       '<button class="big-btn" id="btn-solo">SOLO</button>' +
       '<p class="mode-desc">Le classique, tranquille.</p>' +
       '<button class="big-btn alt" id="btn-combat">COMBAT</button>' +
-      '<p class="mode-desc">Un fantôme t\'envoie des attaques aléatoires.</p>';
+      '<p class="mode-desc">Un fantôme t\'envoie des attaques aléatoires.</p>' +
+      buildLeaderboardHtml();
     overlay.classList.remove('hidden');
-    document.getElementById('btn-solo').addEventListener('click', ()=>startGame('solo'));
-    document.getElementById('btn-combat').addEventListener('click', ()=>startGame('combat'));
+
+    document.getElementById('btn-solo').addEventListener('click', ()=>{ clearSavedGame(); startGame('solo'); });
+    document.getElementById('btn-combat').addEventListener('click', ()=>{ clearSavedGame(); startGame('combat'); });
+    if(saved){
+      document.getElementById('btn-resume-game').addEventListener('click', resumeGame);
+    }
   }
 
   function showGameOverScreen(){
+    document.getElementById('btn-quit').classList.remove('show');
+    document.getElementById('rank-hud').classList.add('hide');
+    boardCanvas.classList.remove('blurred');
+    const top = getTopScores(1)[0];
+    const isRecord = top && top.score === score && top.lines === lines;
     overlay.innerHTML =
       '<h1>GAME OVER</h1>' +
-      '<p>Score final : ' + score + '</p>' +
+      (isRecord ? '<p style="color:#ffd23f;">🏆 Nouveau record !</p>' : '') +
+      '<p>Score final : ' + score + ' · ' + lines + ' lignes</p>' +
       '<button class="big-btn" id="btn-restart">REJOUER</button>' +
       '<button class="sub-btn" id="btn-menu">MENU</button>';
     overlay.classList.remove('hidden');
@@ -1079,19 +1534,17 @@
   function showPauseScreen(){
     overlay.innerHTML =
       '<h1>PAUSE</h1>' +
-      '<p>La partie est en pause.</p>' +
+      '<p>La partie est en pause. Le plateau est flouté pour éviter de tricher.</p>' +
       '<button class="big-btn" id="btn-resume">REPRENDRE</button>' +
-      '<button class="sub-btn" id="btn-menu">MENU</button>';
+      '<button class="sub-btn" id="btn-menu">QUITTER LA PARTIE</button>';
     overlay.classList.remove('hidden');
     document.getElementById('btn-resume').addEventListener('click', ()=>{
       paused = false;
+      boardCanvas.classList.remove('blurred');
       overlay.classList.add('hidden');
       lastTime = performance.now();
     });
-    document.getElementById('btn-menu').addEventListener('click', ()=>{
-      running = false; paused = false;
-      showHome();
-    });
+    document.getElementById('btn-menu').addEventListener('click', confirmQuitFlow);
   }
 
   // ---------------- Game loop ----------------
@@ -1110,12 +1563,19 @@
     speedMultiplier = 1;
     nextHidden = false;
     spotlightActive = false;
+    ghostLying = false;
+    frozen = false;
+    flipped = false;
+    camouflaged = false;
+    mutantPiecesLeft = 0;
+    worm = null;
     attackTimeouts = {};
     telegraph = null;
     fallAnim = null;
     particles = [];
     boardCanvas.style.filter = 'none';
-    document.getElementById('board-frame').classList.remove('incoming');
+    boardCanvas.classList.remove('blurred');
+    document.getElementById('board-frame').classList.remove('incoming', 'flipped');
 
     if(mode === 'combat'){
       enemyGauge = 0;
@@ -1129,6 +1589,7 @@
       document.getElementById('combat-hud').classList.remove('show');
     }
 
+    updateBackgroundForLevel();
     current = newCurrentFromQueue();
     updateHud();
     drawSidePanels();
@@ -1143,13 +1604,16 @@
     lastTime = performance.now();
     if(rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(loop);
+    document.getElementById('btn-quit').classList.add('show');
+    document.getElementById('rank-hud').classList.remove('hide');
+    updateRankPanel();
   }
 
   function togglePause(){
     if(!running || gameOver) return;
     paused = !paused;
-    if(paused) showPauseScreen();
-    else { overlay.classList.add('hidden'); lastTime = performance.now(); }
+    if(paused){ boardCanvas.classList.add('blurred'); showPauseScreen(); }
+    else { boardCanvas.classList.remove('blurred'); overlay.classList.add('hidden'); lastTime = performance.now(); }
   }
 
   function loop(now){
@@ -1159,6 +1623,14 @@
     lastTime = now;
 
     updateParticles(dt);
+
+    if(worm){
+      worm.stepTimer += dt;
+      if(worm.stepTimer >= worm.stepInterval){
+        worm.stepTimer = 0;
+        wormEatStep();
+      }
+    }
 
     if(clearingRows){
       clearAnimTimer -= dt;
@@ -1224,7 +1696,7 @@
     switch(e.code){
       case 'ArrowLeft': moveDir(-1); break;
       case 'ArrowRight': moveDir(1); break;
-      case 'ArrowDown': if(tryMove(0,1)) score += 1; break;
+      case 'ArrowDown': softDrop(); break;
       case 'ArrowUp': tryRotate(1); break;
       case 'KeyZ': tryRotate(-1); break;
       case 'Space': e.preventDefault(); hardDrop(); break;
@@ -1256,7 +1728,7 @@
 
   bindHold(document.getElementById('btn-left'), ()=>{ moveDir(-1); }, 130);
   bindHold(document.getElementById('btn-right'), ()=>{ moveDir(1); }, 130);
-  bindHold(document.getElementById('btn-down'), ()=>{ if(tryMove(0,1)) score += 1; updateHud(); }, 50);
+  bindHold(document.getElementById('btn-down'), softDrop, 50);
   bindHold(document.getElementById('btn-rotR'), ()=>{ tryRotate(1); }, null);
   bindHold(document.getElementById('btn-rotL'), ()=>{ tryRotate(-1); }, null);
   bindHold(document.getElementById('btn-hold'), ()=>{ doHold(); }, null);
@@ -1287,8 +1759,7 @@
       lastMoveX = t.clientX;
     }
     if(dy > SWIPE_THRESHOLD){
-      if(tryMove(0,1)) score += 1;
-      updateHud();
+      softDrop();
       lastMoveY = t.clientY;
     }
   }, {passive:true});
@@ -1317,7 +1788,22 @@
   running = false; paused = false; gameOver = false;
   drawSidePanels();
   resizeCanvas();
+  updateBackgroundForLevel();
   showHome();
+
+  // ---------------- Quit button ----------------
+  document.getElementById('btn-quit').addEventListener('click', ()=>{
+    if(!running || gameOver) return;
+    if(!paused){ paused = true; boardCanvas.classList.add('blurred'); }
+    confirmQuitFlow();
+  });
+
+  // ---------------- Autosave on leave ----------------
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden') autosave();
+  });
+  window.addEventListener('pagehide', autosave);
+  window.addEventListener('beforeunload', autosave);
 
   // ---------------- PWA: install + service worker ----------------
   let deferredInstallPrompt = null;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'blocfall-v1';
+const CACHE_NAME = 'blocfall-v2';
 const ASSETS = [
   './',
   './index.html',
